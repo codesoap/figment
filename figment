@@ -24,7 +24,7 @@ result() {
 trap "result" 2
 
 while true; do
-	file="$(printf '' | awk "END {if (rand() > .5) printf \"$good\"; else printf \"$bad\";}")"
+	file="$(printf '' | awk "END {srand(); if (rand() > .5) printf \"$good\"; else printf \"$bad\";}")"
 	# Enter alternative screen:
 	printf "\e[?1049h"
 	mpv --no-video "$file"
