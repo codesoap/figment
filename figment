@@ -1,0 +1,53 @@
+#!/usr/bin/env sh
+# Test if you can spot the difference in the audio quality of two files.
+# Exit with CTRL-C at any time.
+
+usage="$0 <GOODFILE> <BADFILE>"
+[ $# -ne 2 -o ! -e "$1" -o ! -e "$2" ] && printf "$usage\n" && exit 1
+good="$1"
+bad="$2"
+
+right=0
+wrong=0
+
+result() {
+	# Exit alternative screen:
+	printf "\e[?1049l"
+	if [ "$right" -gt 0 -o "$wrong" -gt 0 ]; then
+		printf 'You were correct %d out of %d times (%.0f%%).\n' \
+			"$right" \
+			"$(($right+$wrong))" \
+			"$(printf "scale=10; 100 * $right / ($right + $wrong)\n" | bc)"
+	fi
+	exit 0
+}
+trap "result" 2
+
+while true; do
+	file="$(printf '' | awk "END {if (rand() > .5) printf \"$good\"; else printf \"$bad\";}")"
+	# Enter alternative screen:
+	printf "\e[?1049h"
+	mpv --no-video "$file"
+	# Exit alternative screen:
+	printf "\e[?1049l"
+	while true; do
+		printf 'Was this [g]ood or [b]ad? '
+		read choice
+		case "$choice" in
+			g)
+				if [ "$file" = "$good" ]; then
+					right="$(($right+1))"
+				else
+					wrong="$(($wrong+1))"
+				fi
+				break;;
+			b)
+				if [ "$file" = "$bad" ]; then
+					right="$(($right+1))"
+				else
+					wrong="$(($wrong+1))"
+				fi
+				break;;
+		esac
+	done
+done
