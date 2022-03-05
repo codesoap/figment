@@ -7,17 +7,17 @@ usage="$0 <GOODFILE> <BADFILE>"
 good="$1"
 bad="$2"
 
+guesses=0
 right=0
-wrong=0
 
 result() {
 	# Exit alternative screen:
 	printf "\e[?1049l"
-	if [ "$right" -gt 0 -o "$wrong" -gt 0 ]; then
+	if [ "$guesses" -gt 0 ]; then
 		printf 'You were correct %d out of %d times (%.0f%%).\n' \
 			"$right" \
-			"$(($right+$wrong))" \
-			"$(printf "scale=10; 100 * $right / ($right + $wrong)\n" | bc)"
+			"$guesses" \
+			"$(printf "scale=10; 100 * $right / $guesses\n" | bc)"
 	fi
 	exit 0
 }
@@ -37,16 +37,14 @@ while true; do
 			g)
 				if [ "$file" = "$good" ]; then
 					right="$(($right+1))"
-				else
-					wrong="$(($wrong+1))"
 				fi
+				guesses="$(($guesses+1))"
 				break;;
 			b)
 				if [ "$file" = "$bad" ]; then
 					right="$(($right+1))"
-				else
-					wrong="$(($wrong+1))"
 				fi
+				guesses="$(($guesses+1))"
 				break;;
 		esac
 	done
